@@ -430,10 +430,12 @@ object Form1: TForm1
     Top = 392
   end
   object PopupMenu1: TPopupMenu
+    AutoHotkeys = maManual
     OnPopup = PopupMenu1Popup
     Left = 136
     Top = 392
     object Settings1: TMenuItem
+      AutoHotkeys = maAutomatic
       Caption = 'Settings'
       OnClick = Settings1Click
     end
@@ -447,7 +449,7 @@ object Form1: TForm1
     end
     object Pause1: TMenuItem
       AutoCheck = True
-      Caption = 'Pause'
+      Caption = 'Auto change wallpapers'
       Checked = True
       OnClick = Pause1Click
     end
