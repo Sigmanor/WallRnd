@@ -318,8 +318,17 @@ begin
 end;
 
 procedure TForm1.Exit1Click(Sender: TObject);
+var
+  Res: Integer;
 begin
-  Application.Terminate();
+  Res := MessageBox(Self.Handle, pChar('Really close the app?'), pChar('Exit'),
+    MB_YESNO + MB_ICONINFORMATION);
+  case Res of
+    IDYES:
+      begin
+        Application.Terminate();
+      end;
+  end;
 end;
 
 end.
