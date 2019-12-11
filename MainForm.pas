@@ -39,7 +39,6 @@ type
     procedure Settings1Click(Sender: TObject);
     procedure FormCloseQuery(Sender: TObject; var CanClose: Boolean);
     procedure NextWallpaper1Click(Sender: TObject);
-    procedure SaveButtonClick(Sender: TObject);
     procedure PopupMenu1Popup(Sender: TObject);
     procedure About1Click(Sender: TObject);
     procedure Rescan1Click(Sender: TObject);
@@ -91,7 +90,6 @@ end;
 procedure SetAutoStart(AppName, AppTitle: string; bRegister: Boolean);
 const
   RegKey = '\Software\Microsoft\Windows\CurrentVersion\Run';
-  // or: RegKey = '\Software\Microsoft\Windows\CurrentVersion\RunOnce';
 var
   Registry: TRegistry;
 begin
@@ -136,6 +134,8 @@ Begin
   TStyleManager.TrySetStyle(Form1.ThemeComboBox.Text);
   Form1.ChangeWallpaperCheckBox.Checked :=
     IniFile.ReadBool('Main', 'ChangeWallpaper', False);
+  Form1.Pause1.Checked := IniFile.ReadBool('Main', 'Timer', False);
+  Form1.Timer1.Enabled := IniFile.ReadBool('Main', 'Timer', False);
 end;
 
 function BoolToStr(const value: Boolean): string;
@@ -148,11 +148,10 @@ end;
 
 procedure TrayIconHint();
 begin
-  Form1.TrayIcon1.Hint := 'Timer: ' +
-    BoolToStr(Form1.Timer1.Enabled) + sLineBreak + 'Interval: ' +
-    Form1.IntervalEdit.Text + ' minutes' + sLineBreak + 'Current image: ' +
-    WallpaperName + sLineBreak + 'Number of wallpapers: ' +
-    Form1.ListBox1.Items.Count.ToString;
+  Form1.TrayIcon1.Hint := 'Timer: ' + BoolToStr(Form1.Timer1.Enabled) +
+    sLineBreak + 'Interval: ' + Form1.IntervalEdit.Text + ' minutes' +
+    sLineBreak + 'Current image: ' + WallpaperName + sLineBreak +
+    'Number of wallpapers: ' + Form1.ListBox1.Items.Count.ToString;
 end;
 
 procedure RandomizeWallpaper();
@@ -180,6 +179,8 @@ begin
 end;
 
 procedure TForm1.FormCloseQuery(Sender: TObject; var CanClose: Boolean);
+Var
+  IniFile: TIniFile;
 begin
   CanClose := False;
   hide();
@@ -187,21 +188,24 @@ begin
   hide();
   if (DirectoryEdit.Text <> '') And (IntervalEdit.Text <> '') then
   begin
+    IniFile := TIniFile.Create(ChangeFileExt(Application.ExeName, '.ini'));
     Timer1.Interval := StrToInt(IntervalEdit.Text) * 60000;
-    Timer1.Enabled := True;
-    Pause1.Checked := False;
+    Timer1.Enabled := IniFile.ReadBool('Main', 'Timer', False);
   end;
   TrayIconHint();
 end;
 
 procedure TForm1.FormCreate(Sender: TObject);
+Var
+  IniFile: TIniFile;
 begin
   LoadSettings();
   if (DirectoryEdit.Text <> '') And (IntervalEdit.Text <> '') then
   begin
+    IniFile := TIniFile.Create(ChangeFileExt(Application.ExeName, '.ini'));
     Application.ShowMainForm := False;
     Timer1.Interval := StrToInt(IntervalEdit.Text) * 60000;
-    Timer1.Enabled := True;
+    Timer1.Enabled := IniFile.ReadBool('Main', 'Timer', False);
     ListBox1.Items.Clear;
     ScanDir(Form1.DirectoryEdit.Text, '', Form1.ListBox1.Items);
     if ChangeWallpaperCheckBox.Checked then
@@ -216,27 +220,26 @@ procedure TForm1.NextWallpaper1Click(Sender: TObject);
 begin
   if (DirectoryEdit.Text <> '') And (IntervalEdit.Text <> '') then
   begin
-    Timer1.Enabled := False;
-    Timer1.Enabled := True;
     RandomizeWallpaper();
   end;
 end;
 
 procedure TForm1.Pause1Click(Sender: TObject);
+Var
+  IniFile: TIniFile;
 begin
+  IniFile := TIniFile.Create(ChangeFileExt(Application.ExeName, '.ini'));
+  IniFile.WriteBool('Main', 'Timer', Form1.Pause1.Checked);
   if (DirectoryEdit.Text <> '') And (IntervalEdit.Text <> '') then
   begin
     Timer1.Interval := StrToInt(IntervalEdit.Text) * 60000;
-    if Pause1.Checked = True then
-      Timer1.Enabled := False;
-    if Pause1.Checked = False then
-      Timer1.Enabled := True;
+    Timer1.Enabled := Pause1.Checked
   end;
   TrayIconHint();
 end;
 
 procedure TForm1.PopupMenu1Popup(Sender: TObject);
-begin
+Begin
   if (DirectoryEdit.Text <> '') And (IntervalEdit.Text <> '') then
   begin
     Pause1.Enabled := True;
@@ -244,15 +247,6 @@ begin
   else
   begin
     Pause1.Enabled := False;
-  end;
-
-  if Timer1.Enabled then
-  begin
-    Pause1.Checked := False;
-  end
-  else
-  begin
-    Pause1.Checked := True;
   end;
 end;
 
@@ -284,8 +278,6 @@ procedure TForm1.TrayIcon1DblClick(Sender: TObject);
 begin
   if (DirectoryEdit.Text <> '') And (IntervalEdit.Text <> '') then
   begin
-    Timer1.Enabled := False;
-    Timer1.Enabled := True;
     RandomizeWallpaper();
     TrayIconHint();
   end;
@@ -294,19 +286,6 @@ end;
 procedure TForm1.About1Click(Sender: TObject);
 begin
   Form2.show;
-end;
-
-procedure TForm1.SaveButtonClick(Sender: TObject);
-begin
-  SaveSettings();
-  hide();
-  if (DirectoryEdit.Text <> '') And (IntervalEdit.Text <> '') then
-  begin
-    Timer1.Interval := StrToInt(IntervalEdit.Text) * 60000;
-    Timer1.Enabled := True;
-    Pause1.Checked := False;
-  end;
-  TrayIconHint();
 end;
 
 procedure TForm1.ChooseFolderButtonClick(Sender: TObject);
