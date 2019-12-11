@@ -68,9 +68,8 @@ object Form2: TForm2
     Font.Name = 'Tahoma'
     Font.Style = []
     ParentFont = False
-    ExplicitLeft = 208
-    ExplicitTop = 0
-    ExplicitWidth = 135
+    ExplicitLeft = 8
+    ExplicitTop = 51
   end
   object AppInfoMemo: TMemo
     Left = 0
