@@ -68,14 +68,13 @@ object Form2: TForm2
     Font.Name = 'Tahoma'
     Font.Style = []
     ParentFont = False
-    ExplicitLeft = 8
-    ExplicitTop = 51
+    ExplicitWidth = 124
   end
   object AppInfoMemo: TMemo
     Left = 0
-    Top = 30
+    Top = 33
     Width = 343
-    Height = 143
+    Height = 140
     Align = alBottom
     Lines.Strings = (
       'Memo1')
