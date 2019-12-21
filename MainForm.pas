@@ -147,17 +147,22 @@ begin
 end;
 
 procedure TrayIconHint();
+Var
+  IniFile: TIniFile;
 begin
+  IniFile := TIniFile.Create(ChangeFileExt(Application.ExeName, '.ini'));
   Form1.TrayIcon1.Hint := 'Timer: ' + BoolToStr(Form1.Timer1.Enabled) +
     sLineBreak + 'Interval: ' + Form1.IntervalEdit.Text + ' minutes' +
-    sLineBreak + 'Current image: ' + WallpaperName + sLineBreak +
-    'Number of wallpapers: ' + Form1.ListBox1.Items.Count.ToString;
+    sLineBreak + 'Current image: ' + IniFile.ReadString('Main', 'WallpaperName',
+    '') + sLineBreak + 'Number of wallpapers: ' +
+    Form1.ListBox1.Items.Count.ToString;
 end;
 
 procedure RandomizeWallpaper();
 var
   FileExtension: String;
   RandomNumber: Integer;
+  IniFile: TIniFile;
 begin
   if Form1.ListBox1.Items.Count <> 0 then
   begin
@@ -167,8 +172,10 @@ begin
     if (FileExtension = '.jpeg') Or (FileExtension = '.jpg') Or
       (FileExtension = '.png') Or (FileExtension = '.bmp') then
     begin
+      IniFile := TIniFile.Create(ChangeFileExt(Application.ExeName, '.ini'));
       SystemParametersInfo(SPI_SETDESKWALLPAPER, 0,
         pChar(Form1.ListBox1.Items[RandomNumber]), SPIF_SENDWININICHANGE);
+      IniFile.WriteString('Main', 'WallpaperName', WallpaperName);
     end
     else
     begin
@@ -185,7 +192,6 @@ begin
   CanClose := False;
   hide();
   SaveSettings();
-  hide();
   if (DirectoryEdit.Text <> '') And (IntervalEdit.Text <> '') then
   begin
     IniFile := TIniFile.Create(ChangeFileExt(Application.ExeName, '.ini'));
@@ -272,6 +278,7 @@ end;
 procedure TForm1.Timer1Timer(Sender: TObject);
 begin
   RandomizeWallpaper();
+  TrayIconHint();
 end;
 
 procedure TForm1.TrayIcon1DblClick(Sender: TObject);
